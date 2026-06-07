@@ -17,72 +17,210 @@ st.set_page_config(
 # Custom premium styling using CSS injections
 st.markdown("""
 <style>
-    .reportview-container {
-        background: #0f1115;
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+    
+    /* Apply modern Outfit font to entire Streamlit app */
+    html, body, [class*="css"], .stMarkdown, .stText, .stButton, button, p, span, h1, h2, h3, h4, h5, h6 {
+        font-family: 'Outfit', sans-serif !important;
     }
+
+    /* Overall page background */
+    .stApp {
+        background: radial-gradient(circle at top right, #131722, #0d0f14) !important;
+        color: #e1e2e7 !important;
+    }
+    
+    /* Main block container padding */
     .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
+        padding-top: 3rem !important;
+        padding-bottom: 3rem !important;
+        max-width: 90% !important;
     }
+
+    /* Glassmorphism sidebar */
+    [data-testid="stSidebar"] {
+        background-color: rgba(15, 20, 35, 0.7) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+        backdrop-filter: blur(12px) !important;
+    }
+
+    /* Sidebar divider */
+    [data-testid="stSidebar"] hr {
+        border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    /* Glowing Gradient Title Text */
+    .glow-text {
+        background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+    }
+
+    /* Tabs Custom Styling */
+    .stTabs [data-baseweb="tab-list"] {
+        background: rgba(255, 255, 255, 0.02) !important;
+        padding: 6px !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        gap: 8px !important;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        padding: 10px 20px !important;
+        border-radius: 8px !important;
+        background-color: transparent !important;
+        color: #8a8d9a !important;
+        font-weight: 600 !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        color: #ffffff !important;
+        background: rgba(255, 255, 255, 0.04) !important;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        color: #00F2FE !important;
+        background: rgba(0, 242, 254, 0.1) !important;
+        border: 1px solid rgba(0, 242, 254, 0.2) !important;
+        box-shadow: 0 0 10px rgba(0, 242, 254, 0.05) !important;
+    }
+    
+    /* Remove default underline of selected tabs */
+    .stTabs [data-baseweb="tab-highlight"] {
+        background-color: transparent !important;
+    }
+
+    /* Glassmorphic Metric Cards */
+    .metric-card {
+        background: rgba(255, 255, 255, 0.02) !important;
+        backdrop-filter: blur(8px);
+        padding: 20px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s, border-color 0.2s;
+        text-align: center;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(0, 242, 254, 0.2);
+        box-shadow: 0 12px 40px 0 rgba(0, 242, 254, 0.05);
+    }
+
+    /* Custom premium buttons */
+    .stButton>button {
+        background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%) !important;
+        color: #0c0f18 !important;
+        font-weight: 700 !important;
+        border: none !important;
+        padding: 12px 24px !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 15px rgba(0, 242, 254, 0.2) !important;
+        transition: all 0.3s ease !important;
+        width: 100% !important;
+    }
+    
+    .stButton>button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(0, 242, 254, 0.4) !important;
+        color: #0c0f18 !important;
+    }
+    
+    .stButton>button:active {
+        transform: translateY(0px) !important;
+    }
+
+    /* Styled Dropzones & Uploaders */
+    [data-testid="stFileUploader"] {
+        border: 2px dashed rgba(255, 255, 255, 0.1) !important;
+        border-radius: 16px !important;
+        background: rgba(255, 255, 255, 0.01) !important;
+        padding: 16px !important;
+        transition: border-color 0.3s;
+    }
+    
+    [data-testid="stFileUploader"]:hover {
+        border-color: #00F2FE !important;
+    }
+
+    /* Glowing Badge definitions */
     .badge {
-        padding: 4px 10px;
-        border-radius: 4px;
-        font-weight: bold;
-        font-size: 12px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 13px;
         display: inline-block;
+        letter-spacing: 0.5px;
     }
     .badge-regression {
-        background-color: #ffebe9;
-        color: #ff3b30;
-        border: 1px solid #ff8f8a;
+        background-color: rgba(255, 59, 48, 0.12) !important;
+        color: #ff453a !important;
+        border: 1px solid rgba(255, 59, 48, 0.3) !important;
+        box-shadow: 0 0 8px rgba(255, 59, 48, 0.1);
     }
     .badge-improvement {
-        background-color: #e6f6ec;
-        color: #34c759;
-        border: 1px solid #84df9b;
+        background-color: rgba(52, 199, 89, 0.12) !important;
+        color: #30d158 !important;
+        border: 1px solid rgba(52, 199, 89, 0.3) !important;
+        box-shadow: 0 0 8px rgba(52, 199, 89, 0.1);
     }
     .badge-neutral {
-        background-color: #f2f2f7;
-        color: #8e8e93;
-        border: 1px solid #d1d1d6;
+        background-color: rgba(142, 142, 147, 0.12) !important;
+        color: #98989d !important;
+        border: 1px solid rgba(142, 142, 147, 0.3) !important;
     }
-    .metric-card {
-        background-color: #ffffff;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e5e5ea;
-        text-align: center;
-    }
+
+    /* Verdict Headers */
     .verdict-header {
         font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 10px;
-        padding: 10px 20px;
-        border-radius: 6px;
+        font-weight: 700;
+        margin-bottom: 24px;
+        padding: 16px 24px;
+        border-radius: 16px;
         text-align: center;
+        letter-spacing: 1px;
     }
     .verdict-regression {
-        background-color: #ffebe9;
-        color: #ff3b30;
-        border: 2px solid #ff3b30;
+        background: linear-gradient(135deg, rgba(255, 59, 48, 0.15) 0%, rgba(255, 69, 58, 0.05) 100%) !important;
+        color: #ff453a !important;
+        border: 1px solid rgba(255, 59, 48, 0.3) !important;
+        box-shadow: 0 0 20px rgba(255, 59, 48, 0.05);
     }
     .verdict-improvement {
-        background-color: #e6f6ec;
-        color: #34c759;
-        border: 2px solid #34c759;
+        background: linear-gradient(135deg, rgba(52, 199, 89, 0.15) 0%, rgba(48, 209, 88, 0.05) 100%) !important;
+        color: #30d158 !important;
+        border: 1px solid rgba(52, 199, 89, 0.3) !important;
+        box-shadow: 0 0 20px rgba(52, 199, 89, 0.05);
     }
     .verdict-neutral {
-        background-color: #f2f2f7;
-        color: #8e8e93;
-        border: 2px solid #8e8e93;
+        background: linear-gradient(135deg, rgba(142, 142, 147, 0.15) 0%, rgba(150, 150, 155, 0.05) 100%) !important;
+        color: #98989d !important;
+        border: 1px solid rgba(142, 142, 147, 0.3) !important;
+    }
+
+    /* Footer styling */
+    .footer {
+        text-align: center;
+        margin-top: 4rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        color: #626575;
+        font-size: 14px;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Title & Description
-st.title("🔍 AIVAR Design Audit Dashboard")
-st.caption("AI-powered design audit and visual regression agent. Automatically evaluates UI design principles and tracks layout discrepancies.")
+# Centered Premium Title Header
+st.markdown("""
+<div style="text-align: center; margin-bottom: 2.5rem;">
+    <h1 class="glow-text" style="font-size: 2.8rem; margin-bottom: 0.5rem; letter-spacing: 0.5px;">🔍 AIVAR Design Audit</h1>
+    <p style="font-size: 1.1rem; color: #8a8d9a; max-width: 600px; margin: 0 auto;">Autonomous visual design quality control, visual hierarchy analysis & regression review agent.</p>
+</div>
+""", unsafe_allow_html=True)
 
 # Sidebar Configuration (Simplified and Premium)
 st.sidebar.image("https://img.icons8.com/isometric-line/100/visible.png", width=80)
@@ -150,13 +288,13 @@ with tab1:
             # Breakdown
             stat_col1, stat_col2, stat_col3, stat_col4 = st.columns(4)
             with stat_col1:
-                st.markdown(f'<div class="metric-card"><h4 style="margin:0;">Critical 🚨</h4><h2 style="margin:5px 0 0 0; color:#ff3b30;">{report["summary"].get("critical", 0)}</h2></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-card"><h4 style="margin:0; color:#ff453a;">Critical 🚨</h4><h2 style="margin:5px 0 0 0; color:#ff453a;">{report["summary"].get("critical", 0)}</h2></div>', unsafe_allow_html=True)
             with stat_col2:
-                st.markdown(f'<div class="metric-card"><h4 style="margin:0;">High 🔴</h4><h2 style="margin:5px 0 0 0; color:#ff9500;">{report["summary"].get("high", 0)}</h2></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-card"><h4 style="margin:0; color:#ff9f0a;">High 🔴</h4><h2 style="margin:5px 0 0 0; color:#ff9f0a;">{report["summary"].get("high", 0)}</h2></div>', unsafe_allow_html=True)
             with stat_col3:
-                st.markdown(f'<div class="metric-card"><h4 style="margin:0;">Medium 🟡</h4><h2 style="margin:5px 0 0 0; color:#ffcc00;">{report["summary"].get("medium", 0)}</h2></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-card"><h4 style="margin:0; color:#ffd60a;">Medium 🟡</h4><h2 style="margin:5px 0 0 0; color:#ffd60a;">{report["summary"].get("medium", 0)}</h2></div>', unsafe_allow_html=True)
             with stat_col4:
-                st.markdown(f'<div class="metric-card"><h4 style="margin:0;">Low/Info 🔵</h4><h2 style="margin:5px 0 0 0; color:#007aff;">{report["summary"].get("low", 0) + report["summary"].get("info", 0)}</h2></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-card"><h4 style="margin:0; color:#64d2ff;">Low/Info 🔵</h4><h2 style="margin:5px 0 0 0; color:#64d2ff;">{report["summary"].get("low", 0) + report["summary"].get("info", 0)}</h2></div>', unsafe_allow_html=True)
                 
             st.markdown("### Detailed Findings Report")
             findings = report.get("findings", [])
@@ -165,28 +303,62 @@ with tab1:
             else:
                 for idx, finding in enumerate(findings):
                     sev = finding["severity"].lower()
-                    if sev in ["critical", "high"]:
-                        badge_color = "#ff3b30"
-                        badge_bg = "#ffebe9"
+                    if sev == "critical":
+                        border_color = "#ff453a"
+                        glow = "rgba(255, 69, 58, 0.12)"
+                    elif sev == "high":
+                        border_color = "#ff9f0a"
+                        glow = "rgba(255, 159, 10, 0.12)"
                     elif sev == "medium":
-                        badge_color = "#ff9500"
-                        badge_bg = "#fff4e5"
+                        border_color = "#ffd60a"
+                        glow = "rgba(253, 214, 10, 0.12)"
+                    elif sev == "low":
+                        border_color = "#64d2ff"
+                        glow = "rgba(100, 210, 255, 0.12)"
                     else:
-                        badge_color = "#007aff"
-                        badge_bg = "#e8f2ff"
+                        border_color = "#bf5af2"
+                        glow = "rgba(191, 90, 242, 0.12)"
                         
-                    badge_style = f"color:{badge_color}; background-color:{badge_bg}; border: 1px solid {badge_color};"
-                    
-                    with st.expander(f"Finding #{idx+1} — [{finding['principle']}] {finding['description'][:80]}...", expanded=True):
-                        col_det1, col_det2 = st.columns([3, 1])
-                        with col_det1:
-                            st.markdown(f"**Description:** {finding['description']}")
-                            st.markdown(f"**User Impact:** {finding['userImpact']}")
-                            st.markdown(f"**Recommendation:** {finding['recommendation']}")
-                            st.caption(f"📍 **Location:** {finding['location']}")
-                        with col_det2:
-                            st.markdown(f'<div class="badge" style="{badge_style}">{finding["severity"].upper()}</div>', unsafe_allow_html=True)
-                            st.metric("Confidence", f"{finding['confidence']}%")
+                    st.markdown(f"""
+                    <div style="
+                        background: rgba(255, 255, 255, 0.02);
+                        border: 1px solid rgba(255, 255, 255, 0.05);
+                        border-left: 5px solid {border_color};
+                        box-shadow: 0 4px 20px {glow};
+                        padding: 22px;
+                        border-radius: 12px;
+                        margin-bottom: 18px;
+                        backdrop-filter: blur(4px);
+                    ">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span style="font-weight: 700; font-size: 16px; color: #ffffff;">Finding — {finding['principle']}</span>
+                            <span style="
+                                font-size: 10px;
+                                font-weight: 700;
+                                color: {border_color};
+                                background: {glow};
+                                border: 1px solid {border_color};
+                                padding: 3px 10px;
+                                border-radius: 6px;
+                                text-transform: uppercase;
+                                letter-spacing: 0.5px;
+                            ">{finding['severity'].upper()}</span>
+                        </div>
+                        <div style="color: #e1e2e7; font-size: 14.5px; margin-bottom: 12px; line-height: 1.5;">
+                            <strong>Description:</strong> {finding['description']}
+                        </div>
+                        <div style="color: #a1a2a7; font-size: 13.5px; margin-bottom: 8px; line-height: 1.4;">
+                            <strong>User Impact:</strong> {finding['userImpact']}
+                        </div>
+                        <div style="color: #64d2ff; font-size: 13.5px; margin-bottom: 10px; line-height: 1.4;">
+                            <strong>Recommendation:</strong> {finding['recommendation']}
+                        </div>
+                        <div style="color: #8e919f; font-size: 12px; display: flex; gap: 15px; border-top: 1px solid rgba(255, 255, 255, 0.04); padding-top: 8px; margin-top: 8px;">
+                            <span>📍 <strong>Location:</strong> {finding['location']}</span>
+                            <span>🎯 <strong>Confidence:</strong> {finding['confidence']}%</span>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
                             
             st.markdown("---")
             st.markdown("### Reports and Export")
@@ -247,14 +419,14 @@ with tab2:
             
             stat_col1, stat_col2, stat_col3, stat_col4 = st.columns(4)
             with stat_col1:
-                st.markdown(f'<div class="metric-card"><h4 style="margin:0;">Regressions 🔴</h4><h2 style="margin:5px 0 0 0; color:#ff3b30;">{report["summary"]["regressions"]}</h2></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-card"><h4 style="margin:0; color:#ff453a;">Regressions 🔴</h4><h2 style="margin:5px 0 0 0; color:#ff453a;">{report["summary"]["regressions"]}</h2></div>', unsafe_allow_html=True)
             with stat_col2:
-                st.markdown(f'<div class="metric-card"><h4 style="margin:0;">Improvements 🟢</h4><h2 style="margin:5px 0 0 0; color:#34c759;">{report["summary"]["improvements"]}</h2></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-card"><h4 style="margin:0; color:#30d158;">Improvements 🟢</h4><h2 style="margin:5px 0 0 0; color:#30d158;">{report["summary"]["improvements"]}</h2></div>', unsafe_allow_html=True)
             with stat_col3:
-                st.markdown(f'<div class="metric-card"><h4 style="margin:0;">Neutral changes 🟡</h4><h2 style="margin:5px 0 0 0; color:#8e8e93;">{report["summary"]["neutral"]}</h2></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-card"><h4 style="margin:0; color:#98989d;">Neutral changes 🟡</h4><h2 style="margin:5px 0 0 0; color:#98989d;">{report["summary"]["neutral"]}</h2></div>', unsafe_allow_html=True)
             with stat_col4:
                 total_diffs = len(report["differences"])
-                st.markdown(f'<div class="metric-card"><h4 style="margin:0;">Total Differences</h4><h2 style="margin:5px 0 0 0; color:#007aff;">{total_diffs}</h2></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-card"><h4 style="margin:0; color:#4FACFE;">Total Differences</h4><h2 style="margin:5px 0 0 0; color:#4FACFE;">{total_diffs}</h2></div>', unsafe_allow_html=True)
                 
             st.markdown("### Side-by-Side Visual Comparison")
             col_img1, col_img2 = st.columns(2)
@@ -273,17 +445,58 @@ with tab2:
                 for idx, diff in enumerate(report["differences"]):
                     loc = diff["location"]
                     loc_str = f"x: {loc['x']}px, y: {loc['y']}px, size: {loc['width']}x{loc['height']}px"
-                    badge_type = f"badge-{diff['classification']}"
+                    classif = diff["classification"].lower()
                     
-                    with st.expander(f"Difference #{idx+1} — {diff['what_changed'][:80]}...", expanded=True):
-                        col_det1, col_det2 = st.columns([3, 1])
-                        with col_det1:
-                            st.markdown(f"**What Changed:** {diff['what_changed']}")
-                            st.markdown(f"**User Impact:** {diff['user_impact']}")
-                            st.caption(f"📍 **Location:** {loc_str}")
-                        with col_det2:
-                            st.markdown(f'<div class="badge {badge_type}">{diff["classification"].upper()}</div>', unsafe_allow_html=True)
-                            st.metric("Confidence Score", f"{int(diff['confidence_score'] * 100)}%")
+                    if classif == "regression":
+                        border_color = "#ff453a"
+                        glow = "rgba(255, 69, 58, 0.12)"
+                        badge_label = "Regression 🔴"
+                    elif classif == "improvement":
+                        border_color = "#30d158"
+                        glow = "rgba(48, 209, 88, 0.12)"
+                        badge_label = "Improvement 🟢"
+                    else:
+                        border_color = "#98989d"
+                        glow = "rgba(152, 152, 157, 0.12)"
+                        badge_label = "Neutral 🟡"
+                        
+                    st.markdown(f"""
+                    <div style="
+                        background: rgba(255, 255, 255, 0.02);
+                        border: 1px solid rgba(255, 255, 255, 0.05);
+                        border-left: 5px solid {border_color};
+                        box-shadow: 0 4px 20px {glow};
+                        padding: 22px;
+                        border-radius: 12px;
+                        margin-bottom: 18px;
+                        backdrop-filter: blur(4px);
+                    ">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span style="font-weight: 700; font-size: 16px; color: #ffffff;">Difference #{idx+1}</span>
+                            <span style="
+                                font-size: 10px;
+                                font-weight: 700;
+                                color: {border_color};
+                                background: {glow};
+                                border: 1px solid {border_color};
+                                padding: 3px 10px;
+                                border-radius: 6px;
+                                text-transform: uppercase;
+                                letter-spacing: 0.5px;
+                            ">{badge_label}</span>
+                        </div>
+                        <div style="color: #e1e2e7; font-size: 14.5px; margin-bottom: 8px; line-height: 1.5;">
+                            <strong>What Changed:</strong> {diff['what_changed']}
+                        </div>
+                        <div style="color: #a1a2a7; font-size: 13.5px; margin-bottom: 10px; line-height: 1.4;">
+                            <strong>User Impact:</strong> {diff['user_impact']}
+                        </div>
+                        <div style="color: #8e919f; font-size: 12px; border-top: 1px solid rgba(255, 255, 255, 0.04); padding-top: 8px; display: flex; gap: 15px;">
+                            <span>📍 <strong>Location:</strong> {loc_str}</span>
+                            <span>🎯 <strong>Confidence Score:</strong> {int(diff['confidence_score'] * 100)}%</span>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
                             
             st.markdown("---")
             st.markdown("### Reports and Export")
@@ -363,14 +576,14 @@ with tab3:
         
         stat_col1, stat_col2, stat_col3, stat_col4 = st.columns(4)
         with stat_col1:
-            st.markdown(f'<div class="metric-card"><h4 style="margin:0;">Regressions 🔴</h4><h2 style="margin:5px 0 0 0; color:#ff3b30;">{report["summary"]["regressions"]}</h2></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-card"><h4 style="margin:0; color:#ff453a;">Regressions 🔴</h4><h2 style="margin:5px 0 0 0; color:#ff453a;">{report["summary"]["regressions"]}</h2></div>', unsafe_allow_html=True)
         with stat_col2:
-            st.markdown(f'<div class="metric-card"><h4 style="margin:0;">Improvements 🟢</h4><h2 style="margin:5px 0 0 0; color:#34c759;">{report["summary"]["improvements"]}</h2></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-card"><h4 style="margin:0; color:#30d158;">Improvements 🟢</h4><h2 style="margin:5px 0 0 0; color:#30d158;">{report["summary"]["improvements"]}</h2></div>', unsafe_allow_html=True)
         with stat_col3:
-            st.markdown(f'<div class="metric-card"><h4 style="margin:0;">Neutral changes 🟡</h4><h2 style="margin:5px 0 0 0; color:#8e8e93;">{report["summary"]["neutral"]}</h2></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-card"><h4 style="margin:0; color:#98989d;">Neutral changes 🟡</h4><h2 style="margin:5px 0 0 0; color:#98989d;">{report["summary"]["neutral"]}</h2></div>', unsafe_allow_html=True)
         with stat_col4:
             total_diffs = len(report["differences"])
-            st.markdown(f'<div class="metric-card"><h4 style="margin:0;">Total Differences</h4><h2 style="margin:5px 0 0 0; color:#007aff;">{total_diffs}</h2></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-card"><h4 style="margin:0; color:#4FACFE;">Total Differences</h4><h2 style="margin:5px 0 0 0; color:#4FACFE;">{total_diffs}</h2></div>', unsafe_allow_html=True)
             
         st.markdown("### Side-by-Side Visual Comparison")
         col_img1, col_img2 = st.columns(2)
@@ -389,17 +602,58 @@ with tab3:
             for idx, diff in enumerate(report["differences"]):
                 loc = diff["location"]
                 loc_str = f"x: {loc['x']}px, y: {loc['y']}px, size: {loc['width']}x{loc['height']}px"
-                badge_type = f"badge-{diff['classification']}"
+                classif = diff["classification"].lower()
                 
-                with st.expander(f"Difference #{idx+1} — {diff['what_changed'][:80]}...", expanded=True):
-                    col_det1, col_det2 = st.columns([3, 1])
-                    with col_det1:
-                        st.markdown(f"**What Changed:** {diff['what_changed']}")
-                        st.markdown(f"**User Impact:** {diff['user_impact']}")
-                        st.caption(f"📍 **Location:** {loc_str}")
-                    with col_det2:
-                        st.markdown(f'<div class="badge {badge_type}">{diff["classification"].upper()}</div>', unsafe_allow_html=True)
-                        st.metric("Confidence Score", f"{int(diff['confidence_score'] * 100)}%")
+                if classif == "regression":
+                    border_color = "#ff453a"
+                    glow = "rgba(255, 69, 58, 0.12)"
+                    badge_label = "Regression 🔴"
+                elif classif == "improvement":
+                    border_color = "#30d158"
+                    glow = "rgba(48, 209, 88, 0.12)"
+                    badge_label = "Improvement 🟢"
+                else:
+                    border_color = "#98989d"
+                    glow = "rgba(152, 152, 157, 0.12)"
+                    badge_label = "Neutral 🟡"
+                    
+                st.markdown(f"""
+                <div style="
+                    background: rgba(255, 255, 255, 0.02);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    border-left: 5px solid {border_color};
+                    box-shadow: 0 4px 20px {glow};
+                    padding: 22px;
+                    border-radius: 12px;
+                    margin-bottom: 18px;
+                    backdrop-filter: blur(4px);
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-weight: 700; font-size: 16px; color: #ffffff;">Difference #{idx+1}</span>
+                        <span style="
+                            font-size: 10px;
+                            font-weight: 700;
+                            color: {border_color};
+                            background: {glow};
+                            border: 1px solid {border_color};
+                            padding: 3px 10px;
+                            border-radius: 6px;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        ">{badge_label}</span>
+                    </div>
+                    <div style="color: #e1e2e7; font-size: 14.5px; margin-bottom: 8px; line-height: 1.5;">
+                        <strong>What Changed:</strong> {diff['what_changed']}
+                    </div>
+                    <div style="color: #a1a2a7; font-size: 13.5px; margin-bottom: 10px; line-height: 1.4;">
+                        <strong>User Impact:</strong> {diff['user_impact']}
+                    </div>
+                    <div style="color: #8e919f; font-size: 12px; border-top: 1px solid rgba(255, 255, 255, 0.04); padding-top: 8px; display: flex; gap: 15px;">
+                        <span>📍 <strong>Location:</strong> {loc_str}</span>
+                        <span>🎯 <strong>Confidence Score:</strong> {int(diff['confidence_score'] * 100)}%</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
                         
         st.markdown("---")
         st.markdown("### Reports and Export")
@@ -427,3 +681,10 @@ with tab3:
                     key="dl_l3_img",
                     use_container_width=True
                 )
+
+# Centered Premium Footer
+st.markdown("""
+<div class="footer">
+    🔍 AIVAR Design Audit Dashboard • Powered by OpenCV, Playwright & Vision Models
+</div>
+""", unsafe_allow_html=True)
