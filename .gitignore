@@ -1,0 +1,31 @@
+# Node dependencies
+node_modules/
+dist/
+public/assets/
+public/index.html
+
+# Python Virtual Environment
+.venv/
+__pycache__/
+*.pyc
+
+# IDEs/editor configurations
+.vs/
+.vscode/
+.idea/
+
+# Local database & secret configuration
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+.env
+backend/.env
+
+# Temporary upload folder files
+uploads/*
+!uploads/.gitkeep
+
+# Logs and debug output
+*.log
+test_output.json

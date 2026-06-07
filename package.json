@@ -1,0 +1,28 @@
+{
+  "name": "aivar-design-agent",
+  "version": "1.0.0",
+  "description": "AI-powered UI/UX Design Review Agent — automatically evaluates screenshots against design principles",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "design-review",
+    "ui-ux",
+    "wcag",
+    "accessibility",
+    "screenshot-analysis"
+  ],
+  "author": "AIVAR Agent",
+  "license": "MIT",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "form-data": "^4.0.5",
+    "jimp": "^0.22.10",
+    "multer": "^1.4.5-lts.1",
+    "playwright": "^1.60.0"
+  }
+}

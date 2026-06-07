@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  passwordHash String
+  createdAt    DateTime      @default(now())
+  auditReports AuditReport[]
+}
+
+model Baseline {
+  id            Int      @id @default(autoincrement())
+  url           String
+  screenshotPath String
+  createdAt     DateTime @default(now())
+  reports       AuditReport[] @relation("BaselineReports")
+}
+
+model AuditReport {
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  level             Int
+  reportJson        String
+  annotatedImagePath String?
+  baselineId        Int?
+  baseline          Baseline? @relation("BaselineReports", fields: [baselineId], references: [id])
+  createdAt         DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
