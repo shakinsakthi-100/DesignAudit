@@ -22,7 +22,8 @@ async function runAutonomousAudit(baselineUrl, currentUrl, outputDir) {
 
     console.log(`[Level 3 Crawler] Navigating to Baseline URL: ${baselineUrl}`);
     const page1 = await context.newPage();
-    await page1.goto(baselineUrl, { waitUntil: 'networkidle' });
+    await page1.goto(baselineUrl, { waitUntil: 'load', timeout: 30000 });
+    await page1.waitForTimeout(2000); // Allow lazy-loaded elements to settle
     
     // Hide dynamic elements to prevent false positives (timestamps, ads, etc.)
     await hideDynamicElements(page1);
@@ -31,7 +32,8 @@ async function runAutonomousAudit(baselineUrl, currentUrl, outputDir) {
 
     console.log(`[Level 3 Crawler] Navigating to Current URL: ${currentUrl}`);
     const page2 = await context.newPage();
-    await page2.goto(currentUrl, { waitUntil: 'networkidle' });
+    await page2.goto(currentUrl, { waitUntil: 'load', timeout: 30000 });
+    await page2.waitForTimeout(2000); // Allow lazy-loaded elements to settle
     
     await hideDynamicElements(page2);
     await page2.screenshot({ path: currentScreenshotPath, fullPage: true });
