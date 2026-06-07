@@ -16,7 +16,14 @@ export async function analyzeRegression(formData: FormData) {
   return res.json()
 }
 
-export async function auditSite(body: { url: string }) {
+export interface AuditSitePayload {
+  baselineUrl: string
+  currentUrl: string
+  diffThreshold?: number
+  minArea?: number
+}
+
+export async function auditSite(body: AuditSitePayload) {
   const res = await fetch('/api/audit-site', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

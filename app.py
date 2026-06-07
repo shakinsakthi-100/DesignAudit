@@ -140,11 +140,31 @@ st.markdown("""
         border-radius: 16px !important;
         background: rgba(255, 255, 255, 0.01) !important;
         padding: 16px !important;
-        transition: border-color 0.3s;
+        transition: all 0.3s ease;
     }
     
     [data-testid="stFileUploader"]:hover {
         border-color: #00F2FE !important;
+        background: rgba(0, 242, 254, 0.02) !important;
+    }
+
+    [data-testid="stFileUploader"] [data-testid="stMarkdownContainer"] p {
+        color: #8a8d9a !important;
+    }
+
+    /* Styled Text Inputs */
+    .stTextInput>div>div>input {
+        background-color: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #ffffff !important;
+        border-radius: 12px !important;
+        padding: 12px 16px !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .stTextInput>div>div>input:focus {
+        border-color: #00F2FE !important;
+        box-shadow: 0 0 12px rgba(0, 242, 254, 0.2) !important;
     }
 
     /* Glowing Badge definitions */
