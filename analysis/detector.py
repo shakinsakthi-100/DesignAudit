@@ -363,56 +363,82 @@ Ensure every ID in the input list has a corresponding entry in the JSON response
 def run_local_reasoning_fallback(raw_diffs, img_w=None, img_h=None):
     """
     Offline/local rule-based generator for differences if OpenAI API is unavailable.
-    Calculates dynamic confidence scores based on physical measurements to reflect real uncertainty.
+    Detects structural layout changes, component changes, shifts, and color variations.
     """
     final_differences = []
     for d in raw_diffs:
         region = get_region_name(d['x'], d['y'], d['width'], d['height'], img_w, img_h)
         desc_parts = []
         classif = "neutral"
-        impact = f"Visual layout or element parameters changed in the {region}. Verify design specifications."
-        conf = 0.70
+        impact = f"Visual changes detected in the {region}."
+        conf = 0.75
+        
+        area = d["width"] * d["height"]
+        
+        # Determine if it's a major structural change
+        is_large = area > 1200 or d["width"] > 80 or d["height"] > 80
+        is_huge = area > 5000 or d["width"] > 150 or d["height"] > 150
         
         if d["shift_detected"]:
             shift_dist = np.sqrt(d["dx"]**2 + d["dy"]**2)
             desc_parts.append(f"Element in the {region} shifted by {abs(d['dx'])}px horizontally and {abs(d['dy'])}px vertically")
             
-            # Heuristic dynamic confidence
             if shift_dist <= 2.5:
                 classif = "neutral"
                 impact = f"Very minor rendering or text-rendering subpixel shift detected in the {region}. Likely benign and unnoticeable."
-                conf = 0.50 # High uncertainty
+                conf = 0.60
             elif shift_dist <= 8.0:
                 classif = "regression"
-                impact = f"Subtle element shift detected in the {region}. May slightly affect alignment guides and spacing consistency."
-                conf = 0.65 # Moderate uncertainty
+                impact = f"Subtle element shift detected in the {region}. May affect alignment guides and spacing consistency."
+                conf = 0.70
             else:
                 classif = "regression"
                 impact = f"Significant layout displacement detected in the {region}. Elements may overlap, break structural alignment, or confuse user scanning flow."
-                conf = float(min(0.95, 0.70 + (shift_dist / 100))) # Higher confidence as shift grows
+                conf = float(min(0.95, 0.75 + (shift_dist / 100)))
+                
+        # If it's a large mismatch area and template match failed, it is likely a content change/mismatch!
+        elif not d["shift_detected"] and (is_large or d["color_dist"] > 40):
+            base_color = get_color_name(d['rgb_baseline'])
+            curr_color = get_color_name(d['rgb_current'])
+            
+            if is_huge:
+                classif = "regression"
+                desc_parts.append(f"Major layout/structural mismatch detected in the {region} (size: {d['width']}x{d['height']}px)")
+                impact = f"Critical structural mismatch or complete layout replacement in the {region}. Elements are missing, newly added, or heavily restructured, breaking design consistency."
+                conf = 0.90
+            elif is_large:
+                classif = "regression"
+                desc_parts.append(f"Component content/layout mismatch in the {region} (size: {d['width']}x{d['height']}px)")
+                impact = f"Significant visual content difference in the {region}. A component, button, text block, or image has been modified, removed, or newly introduced."
+                conf = 0.85
+            else:
+                classif = "regression"
+                desc_parts.append(f"Element structural change or state modification in the {region}")
+                impact = f"Visual difference in element properties (likely size, shape, or content update) in the {region} with average color shift from {base_color} to {curr_color}."
+                conf = 0.78
+                
         elif d["color_dist"] > 15:
             base_color = get_color_name(d['rgb_baseline'])
             curr_color = get_color_name(d['rgb_current'])
             desc_parts.append(f"Color changed from {base_color} to {curr_color} in the {region}")
             
-            # Heuristic dynamic confidence for color
             if d["color_dist"] <= 30:
                 classif = "neutral"
                 impact = f"Subtle background or text color shift in the {region}. Likely a theme update, hover state change, or minor antialiasing difference."
-                conf = 0.55
+                conf = 0.65
             elif d["color_dist"] <= 60:
                 classif = "neutral"
                 impact = f"Intentional color shift or brand styling change in the {region}. Verify if readability and contrast ratios are preserved."
-                conf = 0.65
+                conf = 0.70
             else:
-                classif = "neutral"
-                impact = f"High-contrast color shift in the {region}. A significant style, theme, or component state change was detected."
-                conf = 0.78
+                classif = "regression"
+                impact = f"High-contrast color shift in the {region} (from {base_color} to {curr_color}). This could violate brand guidelines, reduce text legibility, or disrupt the visual hierarchy."
+                conf = 0.82
         else:
-            desc_parts.append(f"Structural layout or content changed in the {region} within a region of {d['width']}x{d['height']} pixels.")
+            desc_parts.append(f"Layout or rendering tweak in the {region} (size: {d['width']}x{d['height']}px)")
             classif = "neutral"
-            impact = "Element resizing, content update, or bounding box adjustment occurred in this area."
-            conf = 0.65
+            impact = "Minor bounding box rendering or spacing adjustment occurred in this area."
+            conf = 0.70
             
         final_differences.append({
             "what_changed": "; ".join(desc_parts),
