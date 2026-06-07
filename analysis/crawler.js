@@ -20,6 +20,11 @@ async function runAutonomousAudit(baselineUrl, currentUrl, outputDir) {
     const baselineScreenshotPath = path.join(outputDir, `baseline-${Date.now()}.png`);
     const currentScreenshotPath = path.join(outputDir, `current-${Date.now()}.png`);
 
+    // If both URLs are identical, capture only one screenshot to avoid
+    // false positives from dynamic content (ads, carousels, timestamps)
+    // that changes between two separate page loads.
+    const sameUrl = baselineUrl.trim() === currentUrl.trim();
+
     console.log(`[Level 3 Crawler] Navigating to Baseline URL: ${baselineUrl}`);
     const page1 = await context.newPage();
     await page1.goto(baselineUrl, { waitUntil: 'load', timeout: 30000 });
@@ -30,14 +35,20 @@ async function runAutonomousAudit(baselineUrl, currentUrl, outputDir) {
     await page1.screenshot({ path: baselineScreenshotPath, fullPage: true });
     await page1.close();
 
-    console.log(`[Level 3 Crawler] Navigating to Current URL: ${currentUrl}`);
-    const page2 = await context.newPage();
-    await page2.goto(currentUrl, { waitUntil: 'load', timeout: 30000 });
-    await page2.waitForTimeout(2000); // Allow lazy-loaded elements to settle
-    
-    await hideDynamicElements(page2);
-    await page2.screenshot({ path: currentScreenshotPath, fullPage: true });
-    await page2.close();
+    if (sameUrl) {
+      // Same URL — reuse the baseline screenshot as current
+      console.log(`[Level 3 Crawler] Same URL detected — reusing baseline screenshot as current.`);
+      fs.copyFileSync(baselineScreenshotPath, currentScreenshotPath);
+    } else {
+      console.log(`[Level 3 Crawler] Navigating to Current URL: ${currentUrl}`);
+      const page2 = await context.newPage();
+      await page2.goto(currentUrl, { waitUntil: 'load', timeout: 30000 });
+      await page2.waitForTimeout(2000); // Allow lazy-loaded elements to settle
+      
+      await hideDynamicElements(page2);
+      await page2.screenshot({ path: currentScreenshotPath, fullPage: true });
+      await page2.close();
+    }
 
     return {
       baselinePath: baselineScreenshotPath,

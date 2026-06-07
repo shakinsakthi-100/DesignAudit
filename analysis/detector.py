@@ -6,26 +6,80 @@ import os
 import sys
 import google.generativeai as genai
 
-def pad_images_to_match(img1, img2):
+def normalize_images_to_match(img1, img2):
     """
-    Pad both images to the maximum dimensions of both, using the corner background color.
+    Normalize both images to the same dimensions for fair comparison.
+    If sizes differ, resize the larger image to match the smaller image's
+    dimensions. This avoids artificial differences from mismatched padding
+    colors or resolution artifacts.
     """
     h1, w1 = img1.shape[:2]
     h2, w2 = img2.shape[:2]
     
-    max_h = max(h1, h2)
-    max_w = max(w1, w2)
+    if h1 == h2 and w1 == w2:
+        # Already matched — no work needed
+        return img1.copy(), img2.copy()
     
-    # Corner pixel color of baseline
-    bg_color1 = [int(x) for x in img1[0, 0]]
-    # Corner pixel color of current
-    bg_color2 = [int(x) for x in img2[0, 0]]
+    # Use the smaller dimensions as the target to avoid upscaling artifacts
+    target_w = min(w1, w2)
+    target_h = min(h1, h2)
     
-    # Pad images
-    padded1 = cv2.copyMakeBorder(img1, 0, max_h - h1, 0, max_w - w1, cv2.BORDER_CONSTANT, value=bg_color1)
-    padded2 = cv2.copyMakeBorder(img2, 0, max_h - h2, 0, max_w - w2, cv2.BORDER_CONSTANT, value=bg_color2)
+    # Resize both images to the target dimensions using high-quality interpolation
+    resized1 = cv2.resize(img1, (target_w, target_h), interpolation=cv2.INTER_AREA)
+    resized2 = cv2.resize(img2, (target_w, target_h), interpolation=cv2.INTER_AREA)
     
-    return padded1, padded2
+    return resized1, resized2
+
+def merge_nearby_boxes(boxes, proximity=30):
+    """
+    Merge bounding boxes that overlap or are within `proximity` pixels of each other.
+    This groups individual menu items, buttons on the same row, etc. into a single
+    component-level difference instead of many repetitive entries.
+    
+    Uses iterative union-find: keeps merging until no more merges are possible.
+    """
+    if not boxes:
+        return boxes
+    
+    def boxes_are_close(a, b, gap):
+        """Check if two (x, y, w, h) boxes overlap or are within `gap` pixels."""
+        ax, ay, aw, ah = a
+        bx, by, bw, bh = b
+        # Expand box A by gap on all sides and check overlap with B
+        return not (ax + aw + gap < bx or bx + bw + gap < ax or
+                    ay + ah + gap < by or by + bh + gap < ay)
+    
+    def union_box(a, b):
+        """Return the smallest box containing both a and b."""
+        ax, ay, aw, ah = a
+        bx, by, bw, bh = b
+        x1 = min(ax, bx)
+        y1 = min(ay, by)
+        x2 = max(ax + aw, bx + bw)
+        y2 = max(ay + ah, by + bh)
+        return (x1, y1, x2 - x1, y2 - y1)
+    
+    merged = list(boxes)
+    changed = True
+    while changed:
+        changed = False
+        new_merged = []
+        used = [False] * len(merged)
+        for i in range(len(merged)):
+            if used[i]:
+                continue
+            current = merged[i]
+            for j in range(i + 1, len(merged)):
+                if used[j]:
+                    continue
+                if boxes_are_close(current, merged[j], proximity):
+                    current = union_box(current, merged[j])
+                    used[j] = True
+                    changed = True
+            new_merged.append(current)
+        merged = new_merged
+    
+    return merged
 
 def detect_visual_differences(baseline_path, current_path, diff_threshold=15, min_area=80):
     """
@@ -38,7 +92,7 @@ def detect_visual_differences(baseline_path, current_path, diff_threshold=15, mi
     if img1 is None or img2 is None:
         raise ValueError("Could not read one or both input images.")
         
-    padded1, padded2 = pad_images_to_match(img1, img2)
+    padded1, padded2 = normalize_images_to_match(img1, img2)
     
     # Convert to grayscale
     gray1 = cv2.cvtColor(padded1, cv2.COLOR_BGR2GRAY)
@@ -51,25 +105,40 @@ def detect_visual_differences(baseline_path, current_path, diff_threshold=15, mi
     _, thresh = cv2.threshold(diff, diff_threshold, 255, cv2.THRESH_BINARY)
     
     # Dilate binary image to group adjacent pixel differences
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (20, 20))
+    # Use a small kernel (7x7) to keep distinct visual changes separated
+    # rather than merging them into one large full-page blob
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7))
     dilated = cv2.dilate(thresh, kernel, iterations=1)
     
     # Find contours
     contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
+    # --- Pass 1: Collect raw bounding boxes from contours ---
+    raw_boxes = []
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        contour_area = w * h
+        
+        # Filter out tiny noise contours
+        if w < 6 or h < 6 or contour_area < min_area:
+            continue
+        
+        raw_boxes.append((x, y, w, h))
+    
+    # --- Pass 2: Merge nearby/overlapping boxes into component-level groups ---
+    # proximity=30 means boxes within 30px of each other are merged.
+    # This groups individual menu items, nav links, and buttons on the same row
+    # into a single component-level difference.
+    merged_boxes = merge_nearby_boxes(raw_boxes, proximity=30)
+    
+    # --- Pass 3: Analyze and annotate each merged box ---
     raw_differences = []
     diff_index = 1
     
     # Copy current image for visualization
     annotated_img = padded2.copy()
     
-    for contour in contours:
-        x, y, w, h = cv2.boundingRect(contour)
-        
-        # Filter out tiny noise contours
-        if w < 6 or h < 6 or (w * h) < min_area:
-            continue
-            
+    for (x, y, w, h) in merged_boxes:
         # Crop regions for comparison
         crop1 = padded1[y:y+h, x:x+w]
         crop2 = padded2[y:y+h, x:x+w]
@@ -134,7 +203,7 @@ def detect_visual_differences(baseline_path, current_path, diff_threshold=15, mi
         
         diff_index += 1
         
-    # Reverse differences so they read top-to-bottom, left-to-right (roughly)
+    # Sort differences top-to-bottom, left-to-right
     raw_differences.sort(key=lambda d: (d["y"], d["x"]))
     # Re-assign IDs sequentially after sorting
     for idx, diff_item in enumerate(raw_differences):
@@ -376,8 +445,11 @@ def run_local_reasoning_fallback(raw_diffs, img_w=None, img_h=None):
         area = d["width"] * d["height"]
         
         # Determine if it's a major structural change
-        is_large = area > 1200 or d["width"] > 80 or d["height"] > 80
-        is_huge = area > 5000 or d["width"] > 150 or d["height"] > 150
+        # Use proportional thresholds based on image dimensions to avoid
+        # classifying normal-sized components as "huge" on large viewports
+        img_area = (img_w or 1920) * (img_h or 1080)
+        is_large = area > max(1200, img_area * 0.005) or d["width"] > max(80, (img_w or 1920) * 0.08) or d["height"] > max(80, (img_h or 1080) * 0.08)
+        is_huge = area > max(5000, img_area * 0.02) or d["width"] > max(150, (img_w or 1920) * 0.15) or d["height"] > max(150, (img_h or 1080) * 0.15)
         
         if d["shift_detected"]:
             shift_dist = np.sqrt(d["dx"]**2 + d["dy"]**2)
